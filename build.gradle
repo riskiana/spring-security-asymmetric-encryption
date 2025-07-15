@@ -13,6 +13,11 @@ java {
 	}
 }
 
+// Define versions
+ext {
+	jjwtVersion = '0.12.6'
+	openApiVersion = '2.8.9'
+}
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
@@ -35,8 +40,15 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	// JJWT dependencies
+	implementation("io.jsonwebtoken:jjwt-api::${jjwtVersion}")
+	runtimeOnly("io.jsonwebtoken:jjwt-impl::${jjwtVersion}")
+	runtimeOnly("io.jsonwebtoken:jjwt-jackson::${jjwtVersion}")
+	//for API documentation/Swagger
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:${openApiVersion}")
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
