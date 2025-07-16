@@ -40,22 +40,50 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public void changePassword(ChangePasswordRequest request, String userId) {
+    if(!request.getNewPassword().equals(request.getConfirmPassword())) {
+      throw new BusinessException(ErrorCode.CHANGE_PASSWORD_MISMATCH);
+    }
+
+    final User savedUser = userRepository.findById(userId)
+        .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, userId));
+    if(!this.passwordEncoder.matches(request.getCurrentPassword(),
+        savedUser.getPassword())) {
+      throw new BusinessException(ErrorCode.INVALID_CURRENT_PASSWORD);
+    }
+    final String encoded = passwordEncoder.encode(request.getNewPassword());
+    savedUser.setPassword(encoded);
+    userRepository.save(savedUser);
 
   }
 
   @Override
   public void deactivateAccount(String userId) {
+    final User user = userRepository.findById(userId)
+        .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, userId));
+    if(!user.isEnabled()){
+      throw new BusinessException(ErrorCode.ACCOUNT_ALREADY_DEACTIVATED);
+    }
+
+    user.setEnabled(false);
+    userRepository.save(user);
 
   }
 
   @Override
   public void reactivateAccount(String userId) {
+    final User user = userRepository.findById(userId)
+        .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, userId));
+    if(user.isEnabled()){
+      throw new BusinessException(ErrorCode.ACCOUNT_ALREADY_ACTIVE);
+    }
 
+    user.setEnabled(true);
+    userRepository.save(user);
   }
 
   @Override
   public void deleteAccount(String userId) {
-
+    //using scheduler to delete everything to the profile
   }
 
 }
